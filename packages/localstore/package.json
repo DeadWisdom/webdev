@@ -1,0 +1,33 @@
+{
+  "name": "localstore",
+  "version": "0.1.0",
+  "description": "A minimal, composable plugin-based browser data layer",
+  "module": "index.ts",
+  "main": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "example": "bun run examples/basic.ts",
+    "build": "bun build ./src/index.ts --outdir ./dist --format esm --minify",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "keywords": [
+    "localstore",
+    "browser",
+    "storage",
+    "indexeddb",
+    "sync",
+    "offline",
+    "plugin"
+  ],
+  "author": "",
+  "license": "MIT"
+}

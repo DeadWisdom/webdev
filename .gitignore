@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+*.pyc
+__pycache__/
+.venv/
+venv/
+env/
+
+# Build outputs
+dist/
+build/
+out/
+*.egg-info/
+.eggs/
+*.tgz
+
+# Python
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
+*.lcov
+
+# Environment
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Logs
+logs/
+*.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# Caches
+.eslintcache
+.cache
+*.tsbuildinfo
+.tsc-cache/
+
+# Bun
+bun.lockb

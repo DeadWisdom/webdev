@@ -1,0 +1,48 @@
+{
+  "name": "@deadwisdom/monorepo",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "bun test",
+    "build": "bun run build:all",
+    "build:all": "for dir in packages/*/; do [ -f \"$dir/package.json\" ] && (cd \"$dir\" && bun run build) || true; done",
+    "lint": "for dir in packages/*/; do [ -f \"$dir/package.json\" ] && (cd \"$dir\" && bun run lint) || true; done",
+    "dev": "bun build ui/index.ts --outdir build --target browser --watch",
+    "serve": "bun ui/index.html --target browser --watch"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prettier": "^3.6.2",
+    "prettier-plugin-jinja-template": "^2.1.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@awesome.me/webawesome": "^3.0.0-beta.6",
+    "@lit-labs/router": "^0.1.4",
+    "firebase": "^12.6.0",
+    "flexsearch": "^0.8.212",
+    "lit": "^3.3.1"
+  },
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-jinja-template"
+    ],
+    "bracketSameLine": true,
+    "singleAttributePerLine": false,
+    "overrides": [
+      {
+        "files": [
+          "*.html"
+        ],
+        "options": {
+          "parser": "jinja-template"
+        }
+      }
+    ]
+  }
+}
