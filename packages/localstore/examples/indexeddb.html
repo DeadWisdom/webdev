@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalStore IndexedDB Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    button {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      margin: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0052a3;
+    }
+    .output {
+      background: #f5f5f5;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    .error {
+      background: #ffebee;
+      border-color: #f44336;
+      color: #c62828;
+    }
+  </style>
+</head>
+<body>
+  <h1>LocalStore IndexedDB Example</h1>
+  <p>This example demonstrates LocalStore with IndexedDB persistent storage.</p>
+  
+  <div>
+    <button onclick="initializeCollection()">Initialize Collection</button>
+    <button onclick="addSampleData()">Add Sample Data</button>
+    <button onclick="loadData()">Load All Data</button>
+    <button onclick="clearData()">Clear All Data</button>
+  </div>
+
+  <div>
+    <h3>Add New Item:</h3>
+    <input type="text" id="itemName" placeholder="Item name" value="Test Item">
+    <input type="number" id="itemPrice" placeholder="Price" value="29.99">
+    <button onclick="addItem()">Add Item</button>
+  </div>
+
+  <div>
+    <h3>Search:</h3>
+    <input type="text" id="searchId" placeholder="Item ID" value="1">
+    <button onclick="searchItem()">Find Item</button>
+  </div>
+
+  <div class="output" id="output">Ready to begin...</div>
+
+  <script type="module">
+    import { localCollection, indexedDB, timestamps } from '../src/index.ts';
+
+    let products;
+    const output = document.getElementById('output');
+
+    function log(message) {
+      console.log(message);
+      output.textContent = message + '\n' + output.textContent;
+      output.className = 'output';
+    }
+
+    function logError(error) {
+      console.error(error);
+      output.textContent = `ERROR: ${error.message}\n` + output.textContent;
+      output.className = 'output error';
+    }
+
+    // Make functions global for onclick handlers
+    window.initializeCollection = async function() {
+      try {
+        log('Initializing collection with IndexedDB...');
+        
+        // Create collection with IndexedDB storage and timestamps
+        products = await localCollection('products',
+          timestamps(),
+          indexedDB({ database: 'localstore-demo' })
+        );
+
+        // Set up change listener
+        products.addEventListener('change', (e) => {
+          const detail = e.detail;
+          log(`Change event: ${detail.op} ${detail.id ? `id=${detail.id}` : ''}`);
+        });
+
+        log('Collection initialized successfully!');
+        log('Database: localstore-demo, Collection: products');
+      } catch (error) {
+        logError(error);
+      }
+    };
+
+    window.addSampleData = async function() {
+      if (!products) {
+        logError(new Error('Collection not initialized. Click "Initialize Collection" first.'));
+        return;
+      }
+
+      try {
+        log('Adding sample data...');
+        
+        const items = [
+          { id: '1', name: 'Widget Pro', price: 29.99, category: 'Electronics' },
+          { id: '2', name: 'Gadget Max', price: 49.99, category: 'Electronics' },
+          { id: '3', name: 'Tool Kit', price: 15.99, category: 'Tools' }
+        ];
+
+        for (const item of items) {
+          await products.put(item);
+        }
+
+        log(`Added ${items.length} sample items`);
+      } catch (error) {
+        logError(error);
+      }
+    };
+
+    window.loadData = async function() {
+      if (!products) {
+        logError(new Error('Collection not initialized. Click "Initialize Collection" first.'));
+        return;
+      }
+
+      try {
+        const items = await products.getAll();
+        log(`Found ${items.length} items in collection:`);
+        
+        if (items.length === 0) {
+          log('No items found. Try adding sample data first.');
+        } else {
+          items.forEach(item => {
+            const created = new Date(item.createdAt).toLocaleString();
+            const updated = new Date(item.updatedAt).toLocaleString();
+            log(`- ${item.name}: $${item.price} (created: ${created}, updated: ${updated})`);
+          });
+        }
+      } catch (error) {
+        logError(error);
+      }
+    };
+
+    window.addItem = async function() {
+      if (!products) {
+        logError(new Error('Collection not initialized. Click "Initialize Collection" first.'));
+        return;
+      }
+
+      try {
+        const name = document.getElementById('itemName').value;
+        const price = parseFloat(document.getElementById('itemPrice').value);
+        
+        if (!name) {
+          throw new Error('Item name is required');
+        }
+        if (isNaN(price)) {
+          throw new Error('Valid price is required');
+        }
+
+        const item = {
+          id: Date.now().toString(),
+          name,
+          price,
+          category: 'Custom'
+        };
+
+        await products.put(item);
+        log(`Added item: ${item.name} ($${item.price}) with ID: ${item.id}`);
+
+        // Clear inputs
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemPrice').value = '';
+      } catch (error) {
+        logError(error);
+      }
+    };
+
+    window.searchItem = async function() {
+      if (!products) {
+        logError(new Error('Collection not initialized. Click "Initialize Collection" first.'));
+        return;
+      }
+
+      try {
+        const id = document.getElementById('searchId').value;
+        if (!id) {
+          throw new Error('Item ID is required');
+        }
+
+        const item = await products.get(id);
+        if (item) {
+          const created = new Date(item.createdAt).toLocaleString();
+          const updated = new Date(item.updatedAt).toLocaleString();
+          log(`Found item ${id}: ${item.name} ($${item.price})`);
+          log(`Created: ${created}, Updated: ${updated}`);
+        } else {
+          log(`Item with ID "${id}" not found`);
+        }
+      } catch (error) {
+        logError(error);
+      }
+    };
+
+    window.clearData = async function() {
+      if (!products) {
+        logError(new Error('Collection not initialized. Click "Initialize Collection" first.'));
+        return;
+      }
+
+      try {
+        await products.clear();
+        log('All data cleared from collection');
+      } catch (error) {
+        logError(error);
+      }
+    };
+
+    // Auto-initialize on page load
+    window.addEventListener('load', () => {
+      log('Page loaded. Click "Initialize Collection" to begin.');
+    });
+  </script>
+</body>
+</html>

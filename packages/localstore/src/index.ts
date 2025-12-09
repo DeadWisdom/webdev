@@ -5,6 +5,7 @@
 // Core exports
 export { localCollection } from './registry.ts';
 export { Collection } from './collection.ts';
+export { OfflineQueue } from './plugins/queue.ts';
 
 // Type exports
 export type {
@@ -20,22 +21,20 @@ export type {
 
 // Storage plugins
 export { memory } from './plugins/storage/memory.ts';
-
-// TODO: Export these as we implement them
-// export { indexedDB } from './plugins/storage/indexeddb.ts';
+export { indexedDB } from './plugins/storage/indexeddb.ts';
 // export { localStorage } from './plugins/storage/localstorage.ts';
 
 // Search plugins
-// export { flexSearch } from './plugins/search/flexsearch.ts';
+export { flexSearch } from './plugins/search/flexsearch.ts';
 
 // Sync plugins
-// export { broadcast } from './plugins/sync/broadcast.ts';
-// export { firebaseSync } from './plugins/sync/firebase.ts';
-// export { httpSync } from './plugins/sync/http.ts';
+export { broadcast } from './plugins/sync/broadcast.ts';
+export { httpSync } from './plugins/sync/http.ts';
+export { firebaseSync } from './plugins/sync/firebase.ts';
 
 // Transform plugins
 export { timestamps } from './plugins/transform/timestamps.ts';
-// export { validate } from './plugins/transform/validate.ts';
+export { validate, commonSchemas, schemaBuilders, validationMiddleware } from './plugins/transform/validate.ts';
 
 // Components
 // export { LocalData } from './components/local-data.ts';

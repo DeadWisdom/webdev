@@ -10,11 +10,22 @@
     "test": "bun test",
     "test:watch": "bun test --watch",
     "example": "bun run examples/basic.ts",
+    "example:comprehensive": "bun run examples/comprehensive-node.ts",
+    "example:search": "bun run examples/search-demo.ts",
+    "showcase": "bun run examples/full-showcase.ts",
+    "example:http": "bun run examples/http-sync-demo.ts",
+    "example:firebase": "bun run examples/firebase-sync-demo.ts",
+    "example:validation": "bun run examples/validation-demo.ts",
     "build": "bun build ./src/index.ts --outdir ./dist --format esm --minify",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest"
+  },
+  "dependencies": {
+    "firebase": "^12.6.0",
+    "flexsearch": "^0.7.43",
+    "zod": "^4.1.13"
   },
   "peerDependencies": {
     "typescript": "^5"

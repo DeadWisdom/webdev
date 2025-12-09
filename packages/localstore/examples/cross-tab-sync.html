@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalStore Cross-Tab Sync Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .demo-info {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .control-group {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+    }
+    
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin: 4px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    button:hover {
+      background: #45a049;
+    }
+    
+    button.danger {
+      background: #f44336;
+    }
+    
+    button.danger:hover {
+      background: #da190b;
+    }
+    
+    input, select {
+      padding: 8px;
+      margin: 4px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+    }
+    
+    .items-display {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .item {
+      background: rgba(255, 255, 255, 0.2);
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .item-info {
+      flex-grow: 1;
+    }
+    
+    .item-actions button {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    
+    .status {
+      background: rgba(0, 255, 0, 0.2);
+      border: 1px solid rgba(0, 255, 0, 0.5);
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      font-family: monospace;
+    }
+    
+    .tab-id {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Cross-Tab Sync Demo</h1>
+    
+    <div class="demo-info">
+      <h3>📋 Instructions:</h3>
+      <ol>
+        <li>🆕 <strong>Open this page in multiple tabs/windows</strong></li>
+        <li>🔄 Changes made in one tab will automatically sync to all other tabs</li>
+        <li>📡 Uses BroadcastChannel API for real-time cross-tab communication</li>
+        <li>💾 Data persists in IndexedDB across browser sessions</li>
+      </ol>
+    </div>
+    
+    <div class="tab-id">Tab ID: <span id="tabId">Loading...</span></div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <h3>📝 Add New Item</h3>
+        <input type="text" id="itemName" placeholder="Item name" value="Sample Item">
+        <select id="itemCategory">
+          <option value="Electronics">Electronics</option>
+          <option value="Books">Books</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Food">Food</option>
+          <option value="Other">Other</option>
+        </select>
+        <input type="number" id="itemPrice" placeholder="Price" value="25.99" step="0.01">
+        <button onclick="addItem()">➕ Add Item</button>
+      </div>
+      
+      <div class="control-group">
+        <h3>🔧 Actions</h3>
+        <button onclick="loadItems()">🔄 Refresh Items</button>
+        <button onclick="addSampleData()">📦 Add Sample Data</button>
+        <button onclick="clearAll()" class="danger">🗑️ Clear All</button>
+        <button onclick="simulateActivity()">🎯 Simulate Activity</button>
+      </div>
+    </div>
+    
+    <div class="status" id="status">Initializing LocalStore...</div>
+    
+    <h3>📦 Items (<span id="itemCount">0</span>)</h3>
+    <div class="items-display" id="itemsDisplay">
+      <p>Loading items...</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { localCollection, indexedDB, broadcast, timestamps } from '../src/index.ts';
+
+    let collection;
+    let tabId;
+    
+    // Generate unique tab ID
+    tabId = `Tab-${Math.random().toString(36).substr(2, 4)}`;
+    document.getElementById('tabId').textContent = tabId;
+
+    function updateStatus(message) {
+      console.log(`[${tabId}] ${message}`);
+      document.getElementById('status').textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+    }
+
+    async function initializeCollection() {
+      try {
+        updateStatus('Creating collection with IndexedDB + Broadcast + Timestamps...');
+        
+        // Create collection with persistent storage, cross-tab sync, and timestamps
+        collection = await localCollection('shared-items',
+          timestamps(),
+          broadcast(), // Cross-tab sync
+          indexedDB({ database: 'cross-tab-demo' }) // Persistent storage
+        );
+
+        // Listen for all changes (local and remote)
+        collection.addEventListener('change', (e) => {
+          const detail = e.detail;
+          const source = detail.source === 'broadcast' ? '📡 Remote' : '💻 Local';
+          updateStatus(`${source} ${detail.op}: ${detail.id || 'collection'}`);
+          loadItems(); // Refresh display
+        });
+
+        updateStatus('✅ Collection initialized successfully!');
+        await loadItems();
+      } catch (error) {
+        updateStatus(`❌ Error: ${error.message}`);
+      }
+    }
+
+    async function loadItems() {
+      if (!collection) return;
+      
+      try {
+        const items = await collection.getAll();
+        const itemsDisplay = document.getElementById('itemsDisplay');
+        const itemCount = document.getElementById('itemCount');
+        
+        itemCount.textContent = items.length;
+        
+        if (items.length === 0) {
+          itemsDisplay.innerHTML = '<p>No items found. Add some items to see them sync!</p>';
+          return;
+        }
+        
+        // Sort by creation time (newest first)
+        items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        
+        itemsDisplay.innerHTML = items.map(item => {
+          const created = new Date(item.createdAt).toLocaleString();
+          const updated = item.updatedAt !== item.createdAt 
+            ? ` (updated: ${new Date(item.updatedAt).toLocaleString()})`
+            : '';
+          
+          return `
+            <div class="item">
+              <div class="item-info">
+                <strong>${item.name}</strong> - $${item.price}
+                <br><small>${item.category} • Created: ${created}${updated}</small>
+              </div>
+              <div class="item-actions">
+                <button onclick="editItem('${item.id}')">✏️ Edit</button>
+                <button onclick="deleteItem('${item.id}')" class="danger">🗑️</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+      } catch (error) {
+        updateStatus(`❌ Error loading items: ${error.message}`);
+      }
+    }
+
+    window.addItem = async function() {
+      if (!collection) {
+        updateStatus('❌ Collection not initialized');
+        return;
+      }
+      
+      const name = document.getElementById('itemName').value.trim();
+      const category = document.getElementById('itemCategory').value;
+      const price = parseFloat(document.getElementById('itemPrice').value);
+      
+      if (!name) {
+        updateStatus('❌ Item name is required');
+        return;
+      }
+      
+      if (isNaN(price) || price < 0) {
+        updateStatus('❌ Valid price is required');
+        return;
+      }
+      
+      try {
+        const item = {
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          name,
+          category,
+          price: Math.round(price * 100) / 100, // Round to 2 decimals
+          addedBy: tabId
+        };
+        
+        await collection.put(item);
+        updateStatus(`✅ Added "${name}" - will sync to other tabs!`);
+        
+        // Clear form
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemPrice').value = '25.99';
+        
+      } catch (error) {
+        updateStatus(`❌ Error adding item: ${error.message}`);
+      }
+    };
+
+    window.deleteItem = async function(id) {
+      if (!collection) return;
+      
+      try {
+        await collection.delete(id);
+        updateStatus(`🗑️ Deleted item ${id}`);
+      } catch (error) {
+        updateStatus(`❌ Error deleting item: ${error.message}`);
+      }
+    };
+
+    window.editItem = async function(id) {
+      if (!collection) return;
+      
+      try {
+        const item = await collection.get(id);
+        if (!item) {
+          updateStatus(`❌ Item ${id} not found`);
+          return;
+        }
+        
+        const newName = prompt('Edit item name:', item.name);
+        if (newName && newName.trim()) {
+          await collection.put({
+            ...item,
+            name: newName.trim(),
+            editedBy: tabId
+          });
+          updateStatus(`✏️ Updated "${newName}"`);
+        }
+      } catch (error) {
+        updateStatus(`❌ Error editing item: ${error.message}`);
+      }
+    };
+
+    window.addSampleData = async function() {
+      if (!collection) return;
+      
+      const sampleItems = [
+        { name: 'MacBook Pro', category: 'Electronics', price: 1299.99 },
+        { name: 'JavaScript Guide', category: 'Books', price: 29.99 },
+        { name: 'Wireless Mouse', category: 'Electronics', price: 45.00 },
+        { name: 'Coffee Beans', category: 'Food', price: 12.50 },
+        { name: 'T-Shirt', category: 'Clothing', price: 19.99 }
+      ];
+      
+      try {
+        for (const item of sampleItems) {
+          await collection.put({
+            ...item,
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            addedBy: tabId
+          });
+          // Small delay to see them appear one by one
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        updateStatus(`📦 Added ${sampleItems.length} sample items`);
+      } catch (error) {
+        updateStatus(`❌ Error adding sample data: ${error.message}`);
+      }
+    };
+
+    window.clearAll = async function() {
+      if (!collection) return;
+      
+      if (confirm('Are you sure you want to clear all items? This will affect all open tabs!')) {
+        try {
+          await collection.clear();
+          updateStatus('🗑️ Cleared all items');
+        } catch (error) {
+          updateStatus(`❌ Error clearing items: ${error.message}`);
+        }
+      }
+    };
+
+    window.loadItems = loadItems;
+
+    window.simulateActivity = async function() {
+      if (!collection) return;
+      
+      const activities = [
+        () => collection.put({
+          id: `activity-${Date.now()}`,
+          name: `Activity Item ${Math.floor(Math.random() * 100)}`,
+          category: 'Other',
+          price: Math.round(Math.random() * 100 * 100) / 100,
+          addedBy: tabId
+        }),
+        async () => {
+          const items = await collection.getAll();
+          if (items.length > 0) {
+            const randomItem = items[Math.floor(Math.random() * items.length)];
+            await collection.delete(randomItem.id);
+          }
+        }
+      ];
+      
+      try {
+        updateStatus('🎯 Simulating random activity...');
+        
+        for (let i = 0; i < 3; i++) {
+          const activity = activities[Math.floor(Math.random() * activities.length)];
+          await activity();
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        updateStatus('✅ Activity simulation complete');
+      } catch (error) {
+        updateStatus(`❌ Error during simulation: ${error.message}`);
+      }
+    };
+
+    // Initialize when page loads
+    window.addEventListener('load', initializeCollection);
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', async () => {
+      if (collection) {
+        await collection.close();
+      }
+    });
+  </script>
+</body>
+</html>
