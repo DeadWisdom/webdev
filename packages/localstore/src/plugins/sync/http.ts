@@ -87,13 +87,15 @@ export function httpSync(options: string | HttpSyncOptions): Plugin {
         window.addEventListener('offline', offlineHandler);
       }
       
-      // Initial pull if enabled
+      // Initial pull if enabled (deferred to next tick to allow event listeners to be attached)
       if (config.pull) {
-        try {
-          await pullFromServer();
-        } catch (error) {
-          console.warn('HTTP sync: Initial pull failed:', error);
-        }
+        setTimeout(async () => {
+          try {
+            await pullFromServer();
+          } catch (error) {
+            console.warn('HTTP sync: Initial pull failed:', error);
+          }
+        }, 0);
       }
       
       // Set up polling if enabled
@@ -121,12 +123,12 @@ export function httpSync(options: string | HttpSyncOptions): Plugin {
               await pushToServer(op, id, doc);
             } else {
               // Queue for later when online
-              queue?.add(op, collection!.name, doc, id);
+              await queue?.add(op, collection!.name, doc, id);
             }
           } catch (error) {
             console.warn(`HTTP sync: Push failed, queuing operation:`, error);
             // Queue failed operations for retry
-            queue?.add(op, collection!.name, doc, id);
+            await queue?.add(op, collection!.name, doc, id);
           }
         };
         

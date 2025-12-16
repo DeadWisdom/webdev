@@ -219,13 +219,18 @@ export function indexedDB(options: IndexedDBOptions = {}): Plugin {
  * Opens IndexedDB database and ensures object store exists
  */
 async function openDatabase(
-  dbName: string, 
-  storeName: string, 
+  dbName: string,
+  storeName: string,
   version?: number
 ): Promise<OpenDatabaseResult> {
+  const idb = globalThis.indexedDB;
+  if (!idb) {
+    throw new Error('IndexedDB is not available in this environment');
+  }
+
   return new Promise((resolve, reject) => {
     // First, open without version to check current version
-    const checkReq = indexedDB.open(dbName);
+    const checkReq = idb.open(dbName);
     
     checkReq.onerror = () => reject(checkReq.error);
     
@@ -237,9 +242,9 @@ async function openDatabase(
       
       // Determine target version
       const targetVersion = version ?? (hasStore ? currentVersion : currentVersion + 1);
-      
+
       // Open with correct version
-      const openReq = indexedDB.open(dbName, targetVersion);
+      const openReq = idb.open(dbName, targetVersion);
       
       openReq.onerror = () => reject(openReq.error);
       

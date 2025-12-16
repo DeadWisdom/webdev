@@ -2,8 +2,10 @@
  * FlexSearch plugin - full-text search functionality
  */
 
-import { Document } from 'flexsearch';
+import FlexSearch from 'flexsearch';
 import type { Plugin, Doc, SearchOptions, Collection, ChangeEvent } from '../../types.ts';
+
+const { Document } = FlexSearch;
 
 export interface FlexSearchOptions {
   fields: string[];

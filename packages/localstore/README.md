@@ -15,7 +15,13 @@ A minimal, composable plugin-based browser data layer with persistence, sync, an
 ## Installation
 
 ```bash
-bun install localstore
+# Core package (no dependencies)
+npm install localstore
+
+# With optional features
+npm install localstore flexsearch    # For full-text search
+npm install localstore zod           # For validation
+npm install localstore firebase      # For Firebase sync
 ```
 
 ## Quick Start
@@ -340,15 +346,67 @@ function myPlugin(): Plugin {
 
 ## Bundle Sizes
 
-| Import | Size (gzipped) |
-|--------|----------------|
-| Core + indexedDB | ~3KB |
-| + broadcast | ~4KB |
-| + flexSearch | ~8KB |
-| + firebaseSync | +Firebase SDK |
-| + httpSync | ~5KB |
-| + web components | ~7KB |
-| Full bundle | ~12KB + Firebase |
+| Bundle | Size | Gzipped |
+|--------|------|---------|
+| **main** | 29.3 KB | 8.8 KB |
+| core | 3.3 KB | 1.2 KB |
+| storage | 3.4 KB | 1.3 KB |
+| search | 2.1 KB | 1.1 KB |
+| transform | 3.7 KB | 1.5 KB |
+| sync | 20.2 KB | 6.0 KB |
+| queue | 7.4 KB | 2.1 KB |
+| components | 30.4 KB | 7.8 KB |
+
+> **Note:** `firebase`, `flexsearch`, and `zod` are optional peer dependencies - only install what you need.
+
+### Tree-Shaking
+
+Import only what you need:
+
+```typescript
+// Full bundle (includes all dependencies)
+import { localCollection, memory, httpSync, flexSearch } from 'localstore';
+
+// Or import separately for smaller bundles
+import { localCollection } from 'localstore/core';
+import { memory, indexedDB } from 'localstore/plugins/storage';
+import { httpSync, broadcast } from 'localstore/plugins/sync';
+import { flexSearch } from 'localstore/plugins/search';
+import { timestamps, validate } from 'localstore/plugins/transform';
+import { OfflineQueue } from 'localstore/plugins/queue';
+```
+
+## Offline Queue
+
+The offline queue automatically handles failed sync operations:
+
+```typescript
+import { OfflineQueue } from 'localstore/plugins/queue';
+
+const queue = new OfflineQueue({
+  storage: 'indexeddb',
+  maxRetries: 5,
+  retryDelay: 1000,
+  handler: async (item) => {
+    await fetch(item.data.url, item.data.options);
+  }
+});
+
+// Queue events
+queue.on('failed', ({ item, error }) => {
+  console.error('Operation failed:', error);
+});
+
+queue.on('drain', () => {
+  console.log('Queue empty');
+});
+
+// Queue management
+queue.pause();
+queue.resume();
+await queue.retryAll();
+const stats = queue.getStats();
+```
 
 ## Development
 
@@ -357,13 +415,19 @@ function myPlugin(): Plugin {
 bun install
 
 # Run tests
-bun test
+bun test              # Unit tests
+bun run test:browser  # Browser tests
+bun run test:all      # All tests
 
 # Build
-bun build ./src/index.ts --outdir ./dist --format esm
+bun run build
+
+# Type check
+bun run typecheck
 
 # Run examples
-bun run examples/basic.ts
+bun run example
+bun run showcase
 ```
 
 ## License

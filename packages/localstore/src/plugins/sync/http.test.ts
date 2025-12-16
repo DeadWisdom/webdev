@@ -291,8 +291,8 @@ test("httpSync offline queue", async () => {
   const collection = await localCollection('http_test_6',
     httpSync({
       endpoint: 'https://api.example.com/docs',
-      retryAttempts: 2,
-      retryDelay: 10
+      retryAttempts: 3,
+      retryDelay: 100  // Longer delay so item stays queued during test
     }),
     memory()
   );
@@ -303,19 +303,20 @@ test("httpSync offline queue", async () => {
   // Simulate going offline
   (globalThis as any).navigator.onLine = false;
   
-  // Mock fetch to fail (simulating network error)
-  mockFetchResponses = [
-    { 
-      ok: false, 
-      status: 0, 
-      statusText: 'Network Error',
-      headers: new Map(),
-      json: async () => { throw new Error('Network Error'); }
-    } as MockResponse
-  ];
-  
+  // Mock fetch to fail repeatedly (simulating network error)
+  const networkError = {
+    ok: false,
+    status: 0,
+    statusText: 'Network Error',
+    headers: new Map(),
+    json: async () => { throw new Error('Network Error'); }
+  } as MockResponse;
+
+  // Provide multiple error responses for initial push + queue retries
+  mockFetchResponses = [networkError, networkError, networkError, networkError, networkError];
+
   // Reset fetch index for new responses
-  fetchResponseIndex = 1;
+  fetchResponseIndex = 0;
   
   // Add document while offline (should be queued due to fetch failure)
   await collection.put({

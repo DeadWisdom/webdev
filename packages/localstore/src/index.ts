@@ -5,7 +5,7 @@
 // Core exports
 export { localCollection } from './registry.ts';
 export { Collection } from './collection.ts';
-export { OfflineQueue } from './plugins/queue.ts';
+export { OfflineQueue, type QueueItem, type OfflineQueueOptions } from './plugins/queue.ts';
 
 // Type exports
 export type {
@@ -36,7 +36,5 @@ export { firebaseSync } from './plugins/sync/firebase.ts';
 export { timestamps } from './plugins/transform/timestamps.ts';
 export { validate, commonSchemas, schemaBuilders, validationMiddleware } from './plugins/transform/validate.ts';
 
-// Components
-// export { LocalData } from './components/local-data.ts';
-// export { LocalQuery } from './components/local-query.ts';
-// export { LocalDebug } from './components/local-debug.ts';
+// Web Components - import separately in browser environments:
+// import { LocalData, LocalQuery, LocalDebug } from 'localstore/components';

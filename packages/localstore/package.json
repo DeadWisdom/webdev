@@ -2,33 +2,101 @@
   "name": "localstore",
   "version": "0.1.0",
   "description": "A minimal, composable plugin-based browser data layer",
-  "module": "index.ts",
-  "main": "index.ts",
   "type": "module",
-  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "default": "./dist/core.js"
+    },
+    "./plugins/storage": {
+      "types": "./dist/plugins/storage/index.d.ts",
+      "import": "./dist/plugins/storage.js",
+      "default": "./dist/plugins/storage.js"
+    },
+    "./plugins/sync": {
+      "types": "./dist/plugins/sync/index.d.ts",
+      "import": "./dist/plugins/sync.js",
+      "default": "./dist/plugins/sync.js"
+    },
+    "./plugins/search": {
+      "types": "./dist/plugins/search/index.d.ts",
+      "import": "./dist/plugins/search.js",
+      "default": "./dist/plugins/search.js"
+    },
+    "./plugins/transform": {
+      "types": "./dist/plugins/transform/index.d.ts",
+      "import": "./dist/plugins/transform.js",
+      "default": "./dist/plugins/transform.js"
+    },
+    "./plugins/queue": {
+      "types": "./dist/plugins/queue.d.ts",
+      "import": "./dist/plugins/queue.js",
+      "default": "./dist/plugins/queue.js"
+    },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "import": "./dist/components.js",
+      "default": "./dist/components.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "./dist/components.js"
+  ],
   "scripts": {
+    "build": "bun run scripts/build.ts",
+    "build:watch": "bun run scripts/build.ts --watch",
+    "dev": "bun run --watch src/index.ts",
     "test": "bun test",
     "test:watch": "bun test --watch",
+    "test:browser": "web-test-runner",
+    "test:all": "bun test && web-test-runner",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build",
     "example": "bun run examples/basic.ts",
     "example:comprehensive": "bun run examples/comprehensive-node.ts",
     "example:search": "bun run examples/search-demo.ts",
     "showcase": "bun run examples/full-showcase.ts",
     "example:http": "bun run examples/http-sync-demo.ts",
     "example:firebase": "bun run examples/firebase-sync-demo.ts",
-    "example:validation": "bun run examples/validation-demo.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist --format esm --minify",
-    "typecheck": "tsc --noEmit"
+    "example:validation": "bun run examples/validation-demo.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "dependencies": {
+    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@types/bun": "latest",
+    "@web/dev-server-esbuild": "^1.0.4",
+    "@web/test-runner": "^0.20.2",
+    "@web/test-runner-playwright": "^0.11.1",
+    "esbuild": "^0.27.1",
+    "fake-indexeddb": "^6.2.5",
     "firebase": "^12.6.0",
     "flexsearch": "^0.7.43",
     "zod": "^4.1.13"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "firebase": "^12.0.0",
+    "flexsearch": "^0.7.0",
+    "zod": "^3.0.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": { "optional": true },
+    "firebase": { "optional": true },
+    "flexsearch": { "optional": true },
+    "zod": { "optional": true }
   },
   "keywords": [
     "localstore",
@@ -37,8 +105,18 @@
     "indexeddb",
     "sync",
     "offline",
-    "plugin"
+    "plugin",
+    "local-first",
+    "offline-first"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": ""
 }
