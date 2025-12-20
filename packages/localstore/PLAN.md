@@ -186,7 +186,6 @@ LocalStore is a plugin-based browser data layer that provides a minimal, composa
 ### 9.2 Quality Assurance
 - [ ] Add ESLint configuration
 - [ ] Set up Prettier
-- [ ] Add pre-commit hooks
 - [ ] Implement CI/CD pipeline
 - [ ] Add coverage reporting
 

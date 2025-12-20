@@ -24,6 +24,7 @@
   "dependencies": {
     "@awesome.me/webawesome": "^3.0.0-beta.6",
     "@lit-labs/router": "^0.1.4",
+    "@types/node": "^25.0.3",
     "firebase": "^12.6.0",
     "flexsearch": "^0.8.212",
     "lit": "^3.3.1"

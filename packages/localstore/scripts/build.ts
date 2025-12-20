@@ -12,8 +12,12 @@
  */
 
 import { $ } from 'bun';
+import { homedir } from 'os';
+import { join } from 'path';
 
 const isWatch = process.argv.includes('--watch');
+const isDev = process.argv.includes('--dev');
+const isProduction = !isDev && !isWatch;
 
 interface BuildEntry {
   name: string;
@@ -83,7 +87,9 @@ const entries: BuildEntry[] = [
 ];
 
 async function build() {
-  console.log('🔨 Building LocalStore...\n');
+  const startTime = performance.now();
+
+  console.log(`🔨 Building LocalStore... ${isProduction ? '(production)' : '(development)'}\n`);
 
   // Clean dist directory
   await $`rm -rf ./dist`;
@@ -102,10 +108,15 @@ async function build() {
         outdir: '.',
         naming: entry.outfile.replace('./', ''),
         format: 'esm',
-        minify: true,
-        sourcemap: 'linked',
+        minify: isProduction,
+        sourcemap: isProduction ? 'linked' : 'inline',
         target: 'browser',
         external: entry.external,
+        // Production optimizations
+        splitting: false, // Disable code splitting for library bundles
+        define: {
+          'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development'),
+        },
       });
 
       if (!result.success) {
@@ -113,15 +124,21 @@ async function build() {
         for (const log of result.logs) {
           console.error(`     ${log}`);
         }
+        if (isProduction) {
+          throw new Error(`Build failed for ${entry.name}`);
+        }
       } else {
         // Get file size
         const file = Bun.file(entry.outfile);
-        const size = await file.size;
+        const size = file.size;
         const sizeKb = (size / 1024).toFixed(2);
         console.log(`     ✅ ${entry.outfile} (${sizeKb} KB)`);
       }
     } catch (error) {
       console.error(`  ❌ Error building ${entry.name}:`, error);
+      if (isProduction) {
+        throw error;
+      }
     }
   }
 
@@ -132,12 +149,24 @@ async function build() {
     console.log('     ✅ Type declarations generated');
   } catch (error) {
     console.warn('     ⚠️  Type declarations generation had warnings (this is often okay)');
+    if (isProduction) {
+      console.error('Type generation failed in production mode');
+      throw error;
+    }
   }
 
-  console.log('\n✨ Build complete!\n');
+  const endTime = performance.now();
+  const duration = ((endTime - startTime) / 1000).toFixed(2);
+
+  console.log(`\n✨ Build complete in ${duration}s!\n`);
 
   // Print bundle summary
   await printBundleSummary();
+
+  // Validate bundle sizes in production
+  if (isProduction) {
+    await validateBundleSizes();
+  }
 }
 
 async function createEntryPoints() {
@@ -218,6 +247,51 @@ async function printBundleSummary() {
   console.log('─'.repeat(60));
   console.log(`   ${'Total'.padEnd(18)} ${(totalSize / 1024).toFixed(2).padStart(8)} KB  ${(totalGzip / 1024).toFixed(2).padStart(8)} KB`);
   console.log('');
+}
+
+async function validateBundleSizes() {
+  console.log('🔍 Validating bundle sizes...\n');
+
+  const limits = {
+    core: 5 * 1024, // 5KB gzipped
+    main: 20 * 1024, // 20KB gzipped
+  };
+
+  let hasViolations = false;
+
+  for (const entry of entries) {
+    const limit = limits[entry.name as keyof typeof limits];
+    if (!limit) continue;
+
+    try {
+      const file = Bun.file(entry.outfile);
+      const content = await file.arrayBuffer();
+      const gzipped = Bun.gzipSync(new Uint8Array(content));
+      const gzipSize = gzipped.byteLength;
+
+      if (gzipSize > limit) {
+        console.error(
+          `   ❌ ${entry.name}: ${(gzipSize / 1024).toFixed(2)} KB exceeds limit of ${(limit / 1024).toFixed(2)} KB`
+        );
+        hasViolations = true;
+      } else {
+        console.log(
+          `   ✅ ${entry.name}: ${(gzipSize / 1024).toFixed(2)} KB (limit: ${(limit / 1024).toFixed(2)} KB)`
+        );
+      }
+    } catch (error) {
+      console.error(`   ⚠️  Could not validate ${entry.name}`);
+    }
+  }
+
+  console.log('');
+
+  if (hasViolations) {
+    console.error('❌ Bundle size validation failed!');
+    throw new Error('Bundle size limits exceeded');
+  } else {
+    console.log('✅ All bundles within size limits');
+  }
 }
 
 // Run build
