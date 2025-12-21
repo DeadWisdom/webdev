@@ -394,8 +394,8 @@ export class LocalQuery extends HTMLElement {
 
     // Also interpolate attributes
     const elements = fragment.querySelectorAll('*');
-    for (const el of elements) {
-      for (const attr of el.attributes) {
+    for (const el of Array.from(elements)) {
+      for (const attr of Array.from(el.attributes)) {
         if (attr.value.includes('{{')) {
           attr.value = this.interpolateString(attr.value, doc);
         }

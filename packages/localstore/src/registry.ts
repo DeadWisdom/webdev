@@ -37,7 +37,7 @@ async function createCollection(name: string, ...plugins: Plugin[]): Promise<Col
 }
 
 // Create the main API
-export const localCollection = createCollection as LocalCollectionAPI;
+export const localCollection = createCollection as unknown as LocalCollectionAPI;
 
 // Add static methods
 localCollection.get = (name: string) => registry.get(name);

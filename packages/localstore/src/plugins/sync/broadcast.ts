@@ -57,6 +57,8 @@ export function broadcast(options: BroadcastOptions = {}): Plugin {
         
         try {
           // Apply the change locally
+          if (!collection) return;
+
           if (op === 'put' && doc) {
             await collection.put(doc, { remote: true });
           } else if (op === 'delete' && id) {
@@ -64,15 +66,15 @@ export function broadcast(options: BroadcastOptions = {}): Plugin {
           } else if (op === 'clear') {
             await collection.clear();
           }
-          
+
           // Emit event so subscribers update (mark as broadcast source)
           collection.dispatchEvent(new CustomEvent('change', {
-            detail: { 
+            detail: {
               ...e.data,
               source: 'broadcast'
             }
           }) as ChangeEvent);
-          
+
         } catch (error) {
           console.error(`Broadcast plugin error applying ${op}:`, error);
         }

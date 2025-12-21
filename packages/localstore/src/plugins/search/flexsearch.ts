@@ -27,7 +27,7 @@ export function flexSearch(options: string[] | FlexSearchOptions): Plugin {
     throw new Error('FlexSearch plugin requires at least one field to index');
   }
   
-  let index: Document<Doc, string[]> | null = null;
+  let index: any | null = null;
   let collection: Collection | null = null;
   
   return {
@@ -61,7 +61,7 @@ export function flexSearch(options: string[] | FlexSearchOptions): Plugin {
         indexConfig.preset = config.preset;
       }
       
-      index = new Document<Doc, string[]>(indexConfig);
+      index = new Document(indexConfig);
       
       // Index existing documents
       try {

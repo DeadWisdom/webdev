@@ -46,27 +46,27 @@ export function validate(options: ValidationOptions): Plugin {
         switch (config.mode) {
           case 'strict':
             // Parse with strict validation - will throw on invalid data
-            validatedDoc = config.schema.parse(doc);
+            validatedDoc = config.schema.parse(doc) as Doc;
             break;
             
           case 'strip':
             // Strip unknown fields but keep valid ones
             const stripResult = config.schema.safeParse(doc);
             if (stripResult.success) {
-              validatedDoc = stripResult.data;
+              validatedDoc = stripResult.data as Doc;
             } else {
               // Try to create a valid document by omitting invalid fields
               validatedDoc = await stripInvalidFields(doc, config.schema);
             }
             break;
-            
+
           case 'transform':
             // Apply schema transforms and coercions
-            validatedDoc = config.schema.parse(doc);
+            validatedDoc = config.schema.parse(doc) as Doc;
             break;
-            
+
           default:
-            validatedDoc = config.schema.parse(doc);
+            validatedDoc = config.schema.parse(doc) as Doc;
         }
         
         // Continue with validated/transformed document
@@ -134,12 +134,13 @@ async function stripInvalidFields(doc: Doc, schema: ZodSchema): Promise<Doc> {
 
 // Helper function to format Zod errors into readable messages
 function formatZodError(error: ZodError): string {
-  if (!error.errors || !Array.isArray(error.errors)) {
+  const issues = (error as any).issues || (error as any).errors;
+  if (!issues || !Array.isArray(issues)) {
     return error.message || 'Validation error';
   }
-  
-  return error.errors
-    .map(err => {
+
+  return issues
+    .map((err: any) => {
       const path = err.path && err.path.length > 0 ? `${err.path.join('.')}: ` : '';
       return `${path}${err.message}`;
     })
@@ -233,9 +234,9 @@ export const schemaBuilders = {
     if (baseSchema instanceof z.ZodObject) {
       // Make all fields optional first, then override id to be required
       const partialSchema = baseSchema.partial();
-      const shape = { ...partialSchema.shape };
+      const shape = { ...(partialSchema as any).shape };
       if (shape.id) {
-        shape.id = z.string(); // Keep id required
+        shape.id = z.string().min(1); // Keep id required
       }
       return z.object(shape);
     }
@@ -267,7 +268,7 @@ export const validationMiddleware = {
       onError: async (error, doc) => {
         console.warn('Validation error:', {
           document: doc,
-          errors: error.errors,
+          errors: (error as any).issues || (error as any).errors,
           timestamp: new Date().toISOString()
         });
       }
@@ -295,7 +296,7 @@ export const validationMiddleware = {
       onError: async (error, doc) => {
         console.warn('Validation failed in development mode:', {
           document: doc,
-          errors: error.errors
+          errors: (error as any).issues || (error as any).errors
         });
       }
     })

@@ -37,14 +37,16 @@ export class Collection extends EventTarget {
       // Build chain: each handler calls next to continue
       // The chain is built right-to-left, so the first plugin runs first
       const chain = handlers.reduceRight(
-        (next, handler) => async (...args: any[]) => {
-          // Handler receives next function as first argument, then the actual arguments
-          return handler(next, ...args);
+        (next: Function, handler: Function) => {
+          return async (...args: any[]) => {
+            // Handler receives next function as first argument, then the actual arguments
+            return handler(next, ...args);
+          };
         },
         // Terminal function - should never be called if plugins are properly terminal
-        async () => {
+        (async () => {
           throw new Error(`Unexpected end of chain for '${method}' in collection '${this.name}'`);
-        }
+        }) as Function
       );
       
       chains.set(method, chain);

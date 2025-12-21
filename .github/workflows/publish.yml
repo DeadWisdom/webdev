@@ -1,0 +1,120 @@
+name: Publish Package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+        type: string
+      npm-tag:
+        description: 'NPM tag (latest, next, beta)'
+        required: true
+        default: 'latest'
+        type: choice
+        options:
+          - latest
+          - next
+          - beta
+          - alpha
+
+jobs:
+  publish:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/localstore
+
+      - name: Update version (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          bun run scripts/version.ts ${{ github.event.inputs.version }}
+        working-directory: packages/localstore
+
+      - name: Run checks
+        run: bun run check
+        working-directory: packages/localstore
+
+      - name: Run tests
+        run: bun test
+        working-directory: packages/localstore
+
+      - name: Build
+        run: bun run build
+        working-directory: packages/localstore
+
+      - name: Publish to NPM
+        run: |
+          NPM_TAG="${{ github.event.inputs.npm-tag || 'latest' }}"
+          npm publish --access public --tag $NPM_TAG
+        working-directory: packages/localstore
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create git tag (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION=${{ github.event.inputs.version }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/localstore/package.json
+          git commit -m "chore: bump version to v$VERSION"
+          git tag "v$VERSION"
+          git push origin main --tags
+
+  publish-dry-run:
+    name: Publish Dry Run
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/localstore
+
+      - name: Build
+        run: bun run build
+        working-directory: packages/localstore
+
+      - name: Dry run publish
+        run: npm publish --dry-run
+        working-directory: packages/localstore
+
+      - name: Package info
+        run: |
+          echo "📦 Package Information"
+          echo "====================="
+          npm pack --dry-run
+        working-directory: packages/localstore

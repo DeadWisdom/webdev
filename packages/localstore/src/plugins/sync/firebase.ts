@@ -284,6 +284,8 @@ export function firebaseSync(options: FirebaseSyncOptions): Plugin {
         const data = snapshot.val();
 
         // Process changes
+        if (!collection) return;
+
         for (const [id, docData] of Object.entries(data)) {
           if (docData && typeof docData === 'object') {
             const doc = { id, ...docData } as Doc;
@@ -297,6 +299,8 @@ export function firebaseSync(options: FirebaseSyncOptions): Plugin {
       }
 
       // Emit real-time sync event
+      if (!collection) return;
+
       collection.dispatchEvent(new CustomEvent('sync:realtime', {
         detail: {
           collection: collection.name,

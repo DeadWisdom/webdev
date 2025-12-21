@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        bun-version: [latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun-version }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/localstore
+
+      - name: Type check
+        run: bun run typecheck
+        working-directory: packages/localstore
+
+      - name: Lint
+        run: bun run lint
+        working-directory: packages/localstore
+
+      - name: Format check
+        run: bun run format:check
+        working-directory: packages/localstore
+
+      - name: Run tests
+        run: bun test
+        working-directory: packages/localstore
+
+      - name: Run browser tests
+        run: bun run test:browser
+        working-directory: packages/localstore
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/localstore
+
+      - name: Build
+        run: bun run build
+        working-directory: packages/localstore
+
+      - name: Check build outputs
+        run: |
+          test -f dist/index.js || exit 1
+          test -f dist/core.js || exit 1
+          test -f dist/plugins/storage.js || exit 1
+          test -f dist/plugins/sync.js || exit 1
+          test -f dist/plugins/search.js || exit 1
+          test -f dist/plugins/transform.js || exit 1
+          test -f dist/components.js || exit 1
+          test -f dist/plugins/queue.js || exit 1
+          echo "✅ All build outputs present"
+        working-directory: packages/localstore
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: packages/localstore/dist/
+          retention-days: 7
+
+  size-check:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/localstore
+
+      - name: Build
+        run: bun run build
+        working-directory: packages/localstore
+
+      - name: Check bundle sizes
+        run: |
+          echo "📊 Bundle Size Report"
+          echo "===================="
+          du -h dist/*.js dist/plugins/*.js | sort -h
+
+          # Check core bundle size (should be < 5KB gzipped)
+          CORE_SIZE=$(gzip -c dist/core.js | wc -c)
+          echo ""
+          echo "Core bundle: $((CORE_SIZE / 1024))KB gzipped"
+
+          if [ $CORE_SIZE -gt 5120 ]; then
+            echo "⚠️  Warning: Core bundle exceeds 5KB gzipped target"
+          else
+            echo "✅ Core bundle size is good"
+          fi
+        working-directory: packages/localstore

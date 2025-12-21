@@ -143,19 +143,19 @@ export class LocalData extends HTMLElement {
 
     // Parse JSON script tags
     const jsonScripts = this.querySelectorAll('script[type="application/json"]');
-    for (const script of jsonScripts) {
+    for (const script of Array.from(jsonScripts)) {
       await this.parseJsonScript(script as HTMLScriptElement);
     }
 
     // Parse JSON-LD script tags
     const ldScripts = this.querySelectorAll('script[type="application/ld+json"]');
-    for (const script of ldScripts) {
+    for (const script of Array.from(ldScripts)) {
       await this.parseJsonLdScript(script as HTMLScriptElement);
     }
 
     // Parse microdata
     const itemscopes = this.querySelectorAll('[itemscope]');
-    for (const element of itemscopes) {
+    for (const element of Array.from(itemscopes)) {
       // Only parse top-level itemscopes (not nested ones)
       if (!element.closest('[itemscope] [itemscope]') || element.closest('[itemscope]') === element) {
         await this.parseMicrodata(element as HTMLElement);
@@ -217,7 +217,7 @@ export class LocalData extends HTMLElement {
 
     // Extract all itemprop values
     const props = element.querySelectorAll('[itemprop]');
-    for (const prop of props) {
+    for (const prop of Array.from(props)) {
       // Skip nested itemscope properties (they belong to nested items)
       const closestScope = prop.closest('[itemscope]');
       if (closestScope !== element) continue;
@@ -311,7 +311,7 @@ export class LocalData extends HTMLElement {
 
     // Handle JSON-LD @id
     if (doc['@id'] && !doc.id) {
-      doc.id = doc['@id'];
+      doc.id = String(doc['@id']);
     }
 
     // Generate id if still missing

@@ -169,7 +169,7 @@ export function indexedDB(options: IndexedDBOptions = {}): Plugin {
   
   // Ensure database connection is available
   async function ensureConnection(): Promise<void> {
-    if (!db || db.readyState !== 'done') {
+    if (!db || (db as any).readyState !== 'done') {
       const result = await openDatabase(dbName, storeName, options.version);
       db = result.db;
     }

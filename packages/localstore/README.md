@@ -15,19 +15,22 @@ A minimal, composable plugin-based browser data layer with persistence, sync, an
 ## Installation
 
 ```bash
-# Core package (no dependencies)
+# Using bun (recommended)
+bun add localstore
+
+# Or using npm
 npm install localstore
 
 # With optional features
-npm install localstore flexsearch    # For full-text search
-npm install localstore zod           # For validation
-npm install localstore firebase      # For Firebase sync
+bun add flexsearch    # For full-text search
+bun add zod           # For validation
+bun add firebase      # For Firebase sync
 ```
 
 ## Quick Start
 
 ```typescript
-import { 
+import {
   localCollection,
   indexedDB,
   flexSearch,
@@ -39,7 +42,7 @@ import {
 const products = await localCollection('products',
   indexedDB(),
   flexSearch(['name', 'description']),
-  firebaseSync('products'),
+  firebaseSync({ path: 'products' }),
   timestamps(),
 );
 
@@ -51,7 +54,7 @@ const found = await products.search('widg');
 await products.delete('1');
 
 // Subscribe to changes
-const off = products.subscribe(docs => render(docs));
+const unsubscribe = products.subscribe(docs => render(docs));
 
 // Collection is an EventTarget
 products.addEventListener('change', (e) => {
@@ -178,6 +181,7 @@ const collection = await localCollection('posts',
 Schema validation using Zod.
 
 ```typescript
+import { validate } from 'localstore';
 import { z } from 'zod';
 
 const ProductSchema = z.object({
@@ -188,7 +192,7 @@ const ProductSchema = z.object({
 
 const collection = await localCollection('products',
   indexedDB(),
-  validate(ProductSchema)
+  validate({ schema: ProductSchema, mode: 'strict' })
 );
 ```
 
@@ -313,32 +317,37 @@ await localCollection.close();
 ## Creating Custom Plugins
 
 ```typescript
+import type { Plugin, Doc, WriteOptions } from 'localstore';
+
 function myPlugin(): Plugin {
   return {
     name: 'my-plugin',
-    
+
     // Called when plugin is added to collection
     async install(collection) {
       console.log(`Installing on ${collection.name}`);
-    },
-    
-    // Wrap the put method
-    async put(next, doc, opts) {
-      // Transform before storage
-      const transformed = { ...doc, custom: true };
-      
-      // Call next plugin in chain
-      await next(transformed, opts);
-      
-      // Do something after storage
-      console.log('Stored:', doc.id);
-    },
-    
-    // Listen to events
-    install(collection) {
+
+      // Listen to events
       collection.addEventListener('change', (e) => {
         console.log('Change detected:', e.detail);
       });
+    },
+
+    // Wrap the put method
+    async put(next, doc: Doc, opts?: WriteOptions): Promise<void> {
+      // Transform before storage
+      const transformed = { ...doc, custom: true };
+
+      // Call next plugin in chain
+      await next(transformed, opts);
+
+      // Do something after storage
+      console.log('Stored:', doc.id);
+    },
+
+    // Clean up when collection closes
+    async destroy() {
+      console.log('Plugin destroyed');
     }
   };
 }
@@ -348,12 +357,12 @@ function myPlugin(): Plugin {
 
 | Bundle | Size | Gzipped |
 |--------|------|---------|
-| **main** | 29.3 KB | 8.8 KB |
+| **main** | 29.1 KB | 8.8 KB |
 | core | 3.3 KB | 1.2 KB |
-| storage | 3.4 KB | 1.3 KB |
+| storage | 3.4 KB | 1.2 KB |
 | search | 2.1 KB | 1.1 KB |
-| transform | 3.7 KB | 1.5 KB |
-| sync | 20.2 KB | 6.0 KB |
+| transform | 3.8 KB | 1.5 KB |
+| sync | 20.1 KB | 6.1 KB |
 | queue | 7.4 KB | 2.1 KB |
 | components | 30.4 KB | 7.8 KB |
 

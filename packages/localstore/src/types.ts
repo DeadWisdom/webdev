@@ -9,6 +9,7 @@ export interface Doc {
 
 export interface WriteOptions {
   remote?: boolean; // True if change came from sync (don't echo back)
+  validateRemote?: boolean; // True to validate remote changes
 }
 
 export interface SearchOptions {
