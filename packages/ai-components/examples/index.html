@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat Component Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    .demo-section {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .demo-section h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 12px;
+    }
+
+    .chat-container {
+      height: 500px;
+    }
+
+    ai-chat {
+      height: 100%;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .controls button {
+      padding: 8px 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .controls button:hover {
+      background: #0056b3;
+    }
+
+    .controls button.secondary {
+      background: #6c757d;
+    }
+
+    .controls button.secondary:hover {
+      background: #545b62;
+    }
+
+    .event-log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+
+    .event-log .event {
+      margin: 4px 0;
+    }
+
+    .event-log .event-name {
+      color: #9cdcfe;
+    }
+
+    .event-log .event-time {
+      color: #6a9955;
+    }
+
+    .suggestions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .suggestion {
+      padding: 6px 12px;
+      background: #e9ecef;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #495057;
+    }
+
+    .suggestion:hover {
+      background: #dee2e6;
+    }
+
+    /* Dark theme variant */
+    .dark-theme {
+      --ai-chat-bg: #1e1e1e;
+      --ai-chat-border: #333;
+      --ai-chat-user-bg: #0d6efd;
+      --ai-chat-user-color: #ffffff;
+      --ai-chat-assistant-bg: #2d2d2d;
+      --ai-chat-assistant-color: #e0e0e0;
+      --ai-chat-input-bg: #2d2d2d;
+      --ai-chat-input-border: #444;
+      --ai-chat-button-bg: #0d6efd;
+      --ai-chat-button-color: #ffffff;
+      --ai-chat-button-hover: #0b5ed7;
+    }
+
+    .theme-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .theme-toggle label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI Chat Component</h1>
+    <p class="subtitle">A web component for AI chat interfaces with streaming markdown</p>
+
+    <div class="demo-section">
+      <h2>Interactive Demo</h2>
+
+      <div class="theme-toggle">
+        <label>
+          <input type="radio" name="theme" value="light" checked>
+          Light Theme
+        </label>
+        <label>
+          <input type="radio" name="theme" value="dark">
+          Dark Theme
+        </label>
+      </div>
+
+      <div class="chat-container">
+        <ai-chat id="demo-chat" placeholder="Ask me anything..."></ai-chat>
+      </div>
+
+      <div class="suggestions">
+        <button class="suggestion" data-message="Hello!">Say Hello</button>
+        <button class="suggestion" data-message="Show me a code example">Code Example</button>
+        <button class="suggestion" data-message="Create a table with data">Show Table</button>
+        <button class="suggestion" data-message="Give me a list of items">Show List</button>
+        <button class="suggestion" data-message="What can you help me with?">Get Help</button>
+      </div>
+
+      <div class="controls">
+        <button id="clear-btn">Clear Chat</button>
+        <button id="export-btn" class="secondary">Export Messages</button>
+      </div>
+
+      <div class="event-log" id="event-log">
+        <div class="event">
+          <span class="event-time">[Ready]</span>
+          <span class="event-name">Chat component initialized</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./demo.ts"></script>
+</body>
+</html>
