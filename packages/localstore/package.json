@@ -1,6 +1,6 @@
 {
   "name": "localstore",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A minimal, composable plugin-based browser data layer",
   "type": "module",
   "main": "./dist/index.js",

@@ -8,12 +8,17 @@ export class Collection extends EventTarget {
   name: string;
   private plugins: Plugin[];
   private chains: Map<MethodName, Function>;
-  
+  private _subscriberCount: number = 0;
+
   constructor(name: string, plugins: Plugin[]) {
     super();
     this.name = name;
     this.plugins = plugins;
     this.chains = this.buildChains();
+  }
+
+  get subscriberCount(): number {
+    return this._subscriberCount;
   }
   
   private buildChains(): Map<MethodName, Function> {
@@ -136,12 +141,23 @@ export class Collection extends EventTarget {
         console.error(`Error in subscribe handler for collection '${this.name}':`, err);
       }
     };
-    
+
     this.addEventListener('change', handler);
+    this._subscriberCount++;
+    this.dispatchEvent(new CustomEvent('subscribers', {
+      detail: { count: this._subscriberCount }
+    }));
+
     handler(); // Initial call
-    
+
     // Return unsubscribe function
-    return () => this.removeEventListener('change', handler);
+    return () => {
+      this.removeEventListener('change', handler);
+      this._subscriberCount--;
+      this.dispatchEvent(new CustomEvent('subscribers', {
+        detail: { count: this._subscriberCount }
+      }));
+    };
   }
   
   async close(): Promise<void> {
