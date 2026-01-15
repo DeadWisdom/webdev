@@ -11,7 +11,10 @@
     "build:all": "for dir in packages/*/; do [ -f \"$dir/package.json\" ] && (cd \"$dir\" && bun run build) || true; done",
     "lint": "for dir in packages/*/; do [ -f \"$dir/package.json\" ] && (cd \"$dir\" && bun run lint) || true; done",
     "dev": "bun build ui/index.ts --outdir build --target browser --watch",
-    "serve": "bun ui/index.html --target browser --watch"
+    "serve": "bun ui/index.html --target browser --watch",
+    "figma:tokens": "bun scripts/figma-export/index.ts tokens",
+    "figma:assets": "bun scripts/figma-export/index.ts assets",
+    "figma:all": "bun scripts/figma-export/index.ts all"
   },
   "devDependencies": {
     "@types/bun": "latest",

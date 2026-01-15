@@ -1,0 +1,54 @@
+/**
+ * Design Tokens - Auto-generated from Figma
+ * Generated: 2026-01-15T15:27:03.917Z
+ * Do not edit directly - run figma-export to update
+ */
+
+:root {
+  /* colors */
+  /* Primary brand color */
+  --colors-primary: #3B82F6;
+  /* Secondary accent color */
+  --colors-secondary: #8B5CF6;
+  --colors-success: #10B981;
+  --colors-warning: #F59E0B;
+  --colors-error: #EF4444;
+  --colors-neutral-50: #FAFAFA;
+  --colors-neutral-100: #F4F4F5;
+  --colors-neutral-200: #E4E4E7;
+  --colors-neutral-300: #D4D4D8;
+  --colors-neutral-400: #A1A1AA;
+  --colors-neutral-500: #71717A;
+  --colors-neutral-600: #52525B;
+  --colors-neutral-700: #3F3F46;
+  --colors-neutral-800: #27272A;
+  --colors-neutral-900: #18181B;
+
+  /* dimensions */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --typography-fontsize-xs: 12px;
+  --typography-fontsize-sm: 14px;
+  --typography-fontsize-base: 16px;
+  --typography-fontsize-lg: 18px;
+  --typography-fontsize-xl: 20px;
+  --typography-fontsize-2xl: 24px;
+  --typography-fontsize-3xl: 30px;
+  --borderradius-none: 0px;
+  --borderradius-sm: 4px;
+  --borderradius-md: 8px;
+  --borderradius-lg: 12px;
+  --borderradius-xl: 16px;
+  --borderradius-full: 9999px;
+
+  /* numbers */
+  --typography-fontweight-normal: 400;
+  --typography-fontweight-medium: 500;
+  --typography-fontweight-semibold: 600;
+  --typography-fontweight-bold: 700;
+
+}

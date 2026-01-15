@@ -1,0 +1,93 @@
+/**
+ * Design Tokens - Auto-generated from Figma
+ * Generated: 2026-01-15T15:27:03.921Z
+ * Do not edit directly - run figma-export to update
+ */
+
+export const tokens = {
+  /** Primary brand color */
+  colorsPrimary: "var(--colors-primary)" as const,
+  /** Secondary accent color */
+  colorsSecondary: "var(--colors-secondary)" as const,
+  colorsSuccess: "var(--colors-success)" as const,
+  colorsWarning: "var(--colors-warning)" as const,
+  colorsError: "var(--colors-error)" as const,
+  colorsNeutral50: "var(--colors-neutral-50)" as const,
+  colorsNeutral100: "var(--colors-neutral-100)" as const,
+  colorsNeutral200: "var(--colors-neutral-200)" as const,
+  colorsNeutral300: "var(--colors-neutral-300)" as const,
+  colorsNeutral400: "var(--colors-neutral-400)" as const,
+  colorsNeutral500: "var(--colors-neutral-500)" as const,
+  colorsNeutral600: "var(--colors-neutral-600)" as const,
+  colorsNeutral700: "var(--colors-neutral-700)" as const,
+  colorsNeutral800: "var(--colors-neutral-800)" as const,
+  colorsNeutral900: "var(--colors-neutral-900)" as const,
+  spacingXs: "var(--spacing-xs)" as const,
+  spacingSm: "var(--spacing-sm)" as const,
+  spacingMd: "var(--spacing-md)" as const,
+  spacingLg: "var(--spacing-lg)" as const,
+  spacingXl: "var(--spacing-xl)" as const,
+  spacing2xl: "var(--spacing-2xl)" as const,
+  typographyFontsizeXs: "var(--typography-fontsize-xs)" as const,
+  typographyFontsizeSm: "var(--typography-fontsize-sm)" as const,
+  typographyFontsizeBase: "var(--typography-fontsize-base)" as const,
+  typographyFontsizeLg: "var(--typography-fontsize-lg)" as const,
+  typographyFontsizeXl: "var(--typography-fontsize-xl)" as const,
+  typographyFontsize2xl: "var(--typography-fontsize-2xl)" as const,
+  typographyFontsize3xl: "var(--typography-fontsize-3xl)" as const,
+  typographyFontweightNormal: "var(--typography-fontweight-normal)" as const,
+  typographyFontweightMedium: "var(--typography-fontweight-medium)" as const,
+  typographyFontweightSemibold: "var(--typography-fontweight-semibold)" as const,
+  typographyFontweightBold: "var(--typography-fontweight-bold)" as const,
+  borderradiusNone: "var(--borderradius-none)" as const,
+  borderradiusSm: "var(--borderradius-sm)" as const,
+  borderradiusMd: "var(--borderradius-md)" as const,
+  borderradiusLg: "var(--borderradius-lg)" as const,
+  borderradiusXl: "var(--borderradius-xl)" as const,
+  borderradiusFull: "var(--borderradius-full)" as const,
+} as const;
+
+export type TokenKey = keyof typeof tokens;
+
+export const cssVariables = {
+  colorsPrimary: "--colors-primary" as const,
+  colorsSecondary: "--colors-secondary" as const,
+  colorsSuccess: "--colors-success" as const,
+  colorsWarning: "--colors-warning" as const,
+  colorsError: "--colors-error" as const,
+  colorsNeutral50: "--colors-neutral-50" as const,
+  colorsNeutral100: "--colors-neutral-100" as const,
+  colorsNeutral200: "--colors-neutral-200" as const,
+  colorsNeutral300: "--colors-neutral-300" as const,
+  colorsNeutral400: "--colors-neutral-400" as const,
+  colorsNeutral500: "--colors-neutral-500" as const,
+  colorsNeutral600: "--colors-neutral-600" as const,
+  colorsNeutral700: "--colors-neutral-700" as const,
+  colorsNeutral800: "--colors-neutral-800" as const,
+  colorsNeutral900: "--colors-neutral-900" as const,
+  spacingXs: "--spacing-xs" as const,
+  spacingSm: "--spacing-sm" as const,
+  spacingMd: "--spacing-md" as const,
+  spacingLg: "--spacing-lg" as const,
+  spacingXl: "--spacing-xl" as const,
+  spacing2xl: "--spacing-2xl" as const,
+  typographyFontsizeXs: "--typography-fontsize-xs" as const,
+  typographyFontsizeSm: "--typography-fontsize-sm" as const,
+  typographyFontsizeBase: "--typography-fontsize-base" as const,
+  typographyFontsizeLg: "--typography-fontsize-lg" as const,
+  typographyFontsizeXl: "--typography-fontsize-xl" as const,
+  typographyFontsize2xl: "--typography-fontsize-2xl" as const,
+  typographyFontsize3xl: "--typography-fontsize-3xl" as const,
+  typographyFontweightNormal: "--typography-fontweight-normal" as const,
+  typographyFontweightMedium: "--typography-fontweight-medium" as const,
+  typographyFontweightSemibold: "--typography-fontweight-semibold" as const,
+  typographyFontweightBold: "--typography-fontweight-bold" as const,
+  borderradiusNone: "--borderradius-none" as const,
+  borderradiusSm: "--borderradius-sm" as const,
+  borderradiusMd: "--borderradius-md" as const,
+  borderradiusLg: "--borderradius-lg" as const,
+  borderradiusXl: "--borderradius-xl" as const,
+  borderradiusFull: "--borderradius-full" as const,
+} as const;
+
+export type CssVariable = (typeof cssVariables)[keyof typeof cssVariables];
