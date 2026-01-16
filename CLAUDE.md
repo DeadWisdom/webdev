@@ -1,3 +1,17 @@
+# Notes
+
+- README.md has an overview of the project
+- Do not add "Generated with Claude Code" or "Co-Authored-By" to git commits
+- Read docs/index.md and use the docs as a reference for your work
+- Specifications are broken up in docs/specs/*.md
+- CODE MUST BE PRODUCTION READY - IT IS NOT FOR TUTORIALS
+  - ALWAYS write good, maintainable, clear code that is going to be run in production
+  - DO NOT wrap sections in try except/catch blocks unless you really have something to do with the exception. It's okay to let exceptions bubble up in most circumstances.
+  - Always start small with the expectation to iterate; add comments for edge-cases or extra features, but do not implement them unless its necessary
+- We use TDD: test, implement, refactor
+- Before working on a new feature, large refactor, or any other big iteration, create a description and add it to docs/iterations, prefixed with an index (001, 002, etc), update it regularly, and when the feature is complete DON'T FORGET TO UDPATE IT!
+- Keep docs/README.md up to date when you create new docs, this should contain an index of the docs with concise summaries
+
 ---
 
 Default to using Bun instead of Node.js.
